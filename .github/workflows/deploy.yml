@@ -1,0 +1,56 @@
+name: Build & Deploy TelePro
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Typecheck and Lint
+        run: npm run lint
+
+      - name: Build Application
+        run: npm run build
+
+      # Deploy to Firebase Hosting using official Firebase Extended action
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        if: env.FIREBASE_SERVICE_ACCOUNT != '' || env.FIREBASE_TOKEN != ''
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SINCERE_PLATEAU_Z5WLS }}'
+          channelId: live
+          projectId: sincere-plateau-z5wls
+        env:
+          FIREBASE_SERVICE_ACCOUNT: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SINCERE_PLATEAU_Z5WLS }}'
+          FIREBASE_TOKEN: '${{ secrets.FIREBASE_TOKEN }}'
+
+      # Alternative CLI deploy step if FIREBASE_TOKEN is provided
+      - name: Deploy via Firebase CLI (Fallback)
+        if: env.FIREBASE_TOKEN != '' && env.FIREBASE_SERVICE_ACCOUNT == ''
+        run: |
+          npx firebase-tools deploy --only hosting,firestore:rules --token "${{ secrets.FIREBASE_TOKEN }}" --project sincere-plateau-z5wls
+        env:
+          FIREBASE_TOKEN: '${{ secrets.FIREBASE_TOKEN }}'

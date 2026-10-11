@@ -1,0 +1,181 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['userId', 'handle', 'displayName', 'email'])
+        && data.userId is string && data.userId.size() <= 128
+        && data.handle is string && data.handle.size() >= 3 && data.handle.size() <= 32
+        && data.displayName is string && data.displayName.size() <= 100
+        && data.email is string && data.email.size() <= 150
+        && (!('headline' in data) || (data.headline is string && data.headline.size() <= 150))
+        && (!('bio' in data) || (data.bio is string && data.bio.size() <= 1000))
+        && (!('company' in data) || (data.company is string && data.company.size() <= 100))
+        && (!('location' in data) || (data.location is string && data.location.size() <= 100))
+        && (!('skills' in data) || (data.skills is string && data.skills.size() <= 500))
+        && (!('experience' in data) || (data.experience is string && data.experience.size() <= 2000))
+        && (!('education' in data) || (data.education is string && data.education.size() <= 1000));
+    }
+
+    function isValidConnection(data) {
+      return data.keys().hasAll(['fromUserId', 'toUserId', 'status'])
+        && data.fromUserId is string && data.fromUserId.size() <= 128
+        && data.toUserId is string && data.toUserId.size() <= 128
+        && (data.status == 'pending' || data.status == 'accepted' || data.status == 'declined');
+    }
+
+    function isValidOrganization(data) {
+      return data.keys().hasAll(['name', 'category', 'ownerId'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && data.category is string && data.category.size() <= 50
+        && data.ownerId is string && data.ownerId.size() <= 128
+        && (!('description' in data) || (data.description is string && data.description.size() <= 1000));
+    }
+
+    function isValidOrgMember(data) {
+      return data.keys().hasAll(['orgId', 'userId', 'role'])
+        && data.orgId is string && data.orgId.size() <= 128
+        && data.userId is string && data.userId.size() <= 128
+        && (data.role == 'owner' || data.role == 'admin' || data.role == 'member' || data.role == 'pending');
+    }
+
+    function isValidConversation(data) {
+      return data.keys().hasAll(['type'])
+        && (data.type == 'direct' || data.type == 'organization')
+        && (!('title' in data) || (data.title is string && data.title.size() <= 100))
+        && (!('lastMessage' in data) || (data.lastMessage is string && data.lastMessage.size() <= 1000));
+    }
+
+    function isValidMessage(data) {
+      return data.keys().hasAll(['conversationId', 'senderId', 'text'])
+        && data.conversationId is string && data.conversationId.size() <= 128
+        && data.senderId is string && data.senderId.size() <= 128
+        && data.text is string && data.text.size() <= 2000;
+    }
+
+    function isValidMeeting(data) {
+      return data.keys().hasAll(['roomCode', 'hostId', 'status'])
+        && data.roomCode is string && data.roomCode.size() <= 50
+        && data.hostId is string && data.hostId.size() <= 128
+        && (data.status == 'active' || data.status == 'ended');
+    }
+
+    // 1. Users collection: Professional profiles and resumes
+    match /users/{userId} {
+      allow read: if isSignedIn() && isValidId(userId);
+      allow create: if isSignedIn()
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && incoming().userId == request.auth.uid
+        && isValidUserProfile(incoming());
+      allow update: if isSignedIn()
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && incoming().userId == existing().userId
+        && isValidUserProfile(incoming());
+    }
+
+    // 2. Connections collection
+    match /connections/{connectionId} {
+      allow read: if isSignedIn()
+        && (resource.data.fromUserId == request.auth.uid || resource.data.toUserId == request.auth.uid);
+      allow create: if isSignedIn()
+        && isValidId(connectionId)
+        && incoming().fromUserId == request.auth.uid
+        && isValidConnection(incoming());
+      allow update: if isSignedIn()
+        && isValidId(connectionId)
+        && (existing().fromUserId == request.auth.uid || existing().toUserId == request.auth.uid)
+        && incoming().fromUserId == existing().fromUserId
+        && incoming().toUserId == existing().toUserId
+        && isValidConnection(incoming());
+      allow delete: if isSignedIn()
+        && (existing().fromUserId == request.auth.uid || existing().toUserId == request.auth.uid);
+    }
+
+    // 3. Organizations collection
+    match /organizations/{orgId} {
+      allow read: if isSignedIn() && isValidId(orgId);
+      allow create: if isSignedIn()
+        && isValidId(orgId)
+        && incoming().ownerId == request.auth.uid
+        && isValidOrganization(incoming());
+      allow update: if isSignedIn()
+        && isValidId(orgId)
+        && existing().ownerId == request.auth.uid
+        && incoming().ownerId == existing().ownerId
+        && isValidOrganization(incoming());
+    }
+
+    // 4. Organization Members
+    match /org_members/{memberId} {
+      allow read: if isSignedIn() && isValidId(memberId);
+      allow create: if isSignedIn()
+        && isValidId(memberId)
+        && incoming().userId == request.auth.uid
+        && isValidOrgMember(incoming());
+      allow update: if isSignedIn()
+        && isValidId(memberId)
+        && (existing().userId == request.auth.uid || get(/databases/$(database)/documents/organizations/$(existing().orgId)).data.ownerId == request.auth.uid)
+        && isValidOrgMember(incoming());
+      allow delete: if isSignedIn()
+        && isValidId(memberId)
+        && (existing().userId == request.auth.uid || get(/databases/$(database)/documents/organizations/$(existing().orgId)).data.ownerId == request.auth.uid);
+    }
+
+    // 5. Conversations
+    match /conversations/{conversationId} {
+      allow read: if isSignedIn() && isValidId(conversationId);
+      allow create: if isSignedIn()
+        && isValidId(conversationId)
+        && isValidConversation(incoming());
+      allow update: if isSignedIn()
+        && isValidId(conversationId)
+        && isValidConversation(incoming());
+
+      // 6. Subcollection: Messages
+      match /messages/{messageId} {
+        allow read: if isSignedIn() && isValidId(messageId);
+        allow create: if isSignedIn()
+          && isValidId(messageId)
+          && incoming().senderId == request.auth.uid
+          && isValidMessage(incoming());
+        allow delete: if isSignedIn()
+          && resource.data.senderId == request.auth.uid;
+      }
+    }
+
+    // 7. Meetings
+    match /meetings/{meetingId} {
+      allow read: if isSignedIn() && isValidId(meetingId);
+      allow create: if isSignedIn()
+        && isValidId(meetingId)
+        && incoming().hostId == request.auth.uid
+        && isValidMeeting(incoming());
+      allow update: if isSignedIn()
+        && isValidId(meetingId)
+        && isValidMeeting(incoming());
+    }
+  }
+}

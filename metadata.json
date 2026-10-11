@@ -1,0 +1,9 @@
+{
+  "name": "TelePro - Professional Messenger & Network",
+  "description": "Professional messaging platform combining Telegram-style instant messaging, LinkedIn-grade profiles and resumes, discoverable industry organizations, and Google Meet video rooms.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

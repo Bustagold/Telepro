@@ -1,0 +1,155 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Professional profile and LinkedIn-grade resume for a user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "handle": { "type": "string", "maxLength": 32, "pattern": "^[a-zA-Z0-9_]{3,32}$" },
+        "displayName": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 150 },
+        "photoURL": { "type": "string", "maxLength": 500 },
+        "headline": { "type": "string", "maxLength": 150 },
+        "bio": { "type": "string", "maxLength": 1000 },
+        "company": { "type": "string", "maxLength": 100 },
+        "location": { "type": "string", "maxLength": 100 },
+        "skills": { "type": "string", "maxLength": 500 },
+        "experience": { "type": "string", "maxLength": 2000 },
+        "education": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "handle", "displayName", "email"]
+    },
+    "Connection": {
+      "title": "Connection",
+      "description": "Professional connect request between two users",
+      "type": "object",
+      "properties": {
+        "connectionId": { "type": "string", "maxLength": 128 },
+        "fromUserId": { "type": "string", "maxLength": 128 },
+        "toUserId": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "enum": ["pending", "accepted", "declined"] },
+        "fromUserName": { "type": "string", "maxLength": 100 },
+        "fromUserHandle": { "type": "string", "maxLength": 32 },
+        "fromUserHeadline": { "type": "string", "maxLength": 150 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["fromUserId", "toUserId", "status"]
+    },
+    "Organization": {
+      "title": "Organization",
+      "description": "Professional company or industry group for team collaboration and discussions",
+      "type": "object",
+      "properties": {
+        "orgId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 100 },
+        "slug": { "type": "string", "maxLength": 50, "pattern": "^[a-zA-Z0-9_-]{2,50}$" },
+        "category": { "type": "string", "enum": ["Tech", "Startup", "AI & ML", "Design", "Finance", "Product", "General"] },
+        "description": { "type": "string", "maxLength": 1000 },
+        "logoUrl": { "type": "string", "maxLength": 500 },
+        "website": { "type": "string", "maxLength": 200 },
+        "ownerId": { "type": "string", "maxLength": 128 },
+        "memberCount": { "type": "number" },
+        "isPublic": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "category", "ownerId"]
+    },
+    "OrgMember": {
+      "title": "OrgMember",
+      "description": "Membership mapping between a user and an organization",
+      "type": "object",
+      "properties": {
+        "memberId": { "type": "string", "maxLength": 128 },
+        "orgId": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "enum": ["owner", "admin", "member", "pending"] },
+        "joinedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["orgId", "userId", "role"]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "Chat thread either 1-on-1 direct or group/organization channel",
+      "type": "object",
+      "properties": {
+        "conversationId": { "type": "string", "maxLength": 128 },
+        "type": { "type": "string", "enum": ["direct", "organization"] },
+        "orgId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 100 },
+        "lastMessage": { "type": "string", "maxLength": 1000 },
+        "lastMessageSenderId": { "type": "string", "maxLength": 128 },
+        "lastMessageTime": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["type"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Chat message sent in a conversation",
+      "type": "object",
+      "properties": {
+        "messageId": { "type": "string", "maxLength": 128 },
+        "conversationId": { "type": "string", "maxLength": 128 },
+        "senderId": { "type": "string", "maxLength": 128 },
+        "senderName": { "type": "string", "maxLength": 100 },
+        "senderHandle": { "type": "string", "maxLength": 32 },
+        "text": { "type": "string", "maxLength": 2000 },
+        "type": { "type": "string", "enum": ["text", "meet_invite", "system"] },
+        "meetUrl": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["conversationId", "senderId", "text"]
+    },
+    "Meeting": {
+      "title": "Meeting",
+      "description": "Google Meet-style virtual room session for direct or organization calls",
+      "type": "object",
+      "properties": {
+        "meetingId": { "type": "string", "maxLength": 128 },
+        "roomCode": { "type": "string", "maxLength": 50, "pattern": "^[a-z0-9-]+$" },
+        "title": { "type": "string", "maxLength": 100 },
+        "conversationId": { "type": "string", "maxLength": 128 },
+        "hostId": { "type": "string", "maxLength": 128 },
+        "hostName": { "type": "string", "maxLength": 100 },
+        "status": { "type": "string", "enum": ["active", "ended"] },
+        "participantsCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["roomCode", "hostId", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User professional profile, telegram ID handle, and LinkedIn-style resume"
+    },
+    "/connections/{connectionId}": {
+      "schema": "Connection",
+      "description": "Connect requests between professionals"
+    },
+    "/organizations/{orgId}": {
+      "schema": "Organization",
+      "description": "Public and community professional organizations and company hubs"
+    },
+    "/org_members/{memberId}": {
+      "schema": "OrgMember",
+      "description": "Membership roles within an organization"
+    },
+    "/conversations/{conversationId}": {
+      "schema": "Conversation",
+      "description": "Direct and group conversations"
+    },
+    "/conversations/{conversationId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Messages within a conversation"
+    },
+    "/meetings/{meetingId}": {
+      "schema": "Meeting",
+      "description": "Active and scheduled Google Meet video rooms"
+    }
+  }
+}
