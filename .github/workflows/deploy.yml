@@ -23,10 +23,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
       - name: Install Dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Typecheck and Lint
         run: npm run lint
@@ -34,7 +33,7 @@ jobs:
       - name: Build Application
         run: npm run build
 
-      # Deploy to Firebase Hosting using official Firebase Extended action
+      # Deploy to Firebase Hosting
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         if: env.FIREBASE_SERVICE_ACCOUNT != '' || env.FIREBASE_TOKEN != ''
@@ -47,7 +46,7 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SINCERE_PLATEAU_Z5WLS }}'
           FIREBASE_TOKEN: '${{ secrets.FIREBASE_TOKEN }}'
 
-      # Alternative CLI deploy step if FIREBASE_TOKEN is provided
+      # Fallback CLI deploy
       - name: Deploy via Firebase CLI (Fallback)
         if: env.FIREBASE_TOKEN != '' && env.FIREBASE_SERVICE_ACCOUNT == ''
         run: |
