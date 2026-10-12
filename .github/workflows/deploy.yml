@@ -53,3 +53,4 @@ jobs:
           npx firebase-tools deploy --only hosting,firestore:rules --token "${{ secrets.FIREBASE_TOKEN }}" --project sincere-plateau-z5wls
         env:
           FIREBASE_TOKEN: '${{ secrets.FIREBASE_TOKEN }}'
+          
