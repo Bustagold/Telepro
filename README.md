@@ -12,7 +12,7 @@ A professional messaging and networking platform combining:
 ## Getting Started
 
 ### 1. Install Dependencies
- npm install --legacy-peer-deps
+ run: npm install --legacy-peer-deps
 ```
 
 ### 2. Run Local Development Server
