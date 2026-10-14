@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   UserCheck
 } from 'lucide-react';
+import { PWAInstallButton } from './PWAInstallButton';
 import { UserProfile } from '../types';
 
 interface TelegramDrawerProps {
@@ -140,6 +141,9 @@ export const TelegramDrawer: React.FC<TelegramDrawerProps> = ({
               <Video className="w-4 h-4 text-[#ea4335]" />
               <span className="font-medium">Instant Google Meet</span>
             </button>
+
+            {/* In-app Download / Install PWA */}
+            <PWAInstallButton variant="menu-item" />
           </div>
 
           <div className="py-1">

@@ -19,7 +19,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -33,7 +33,14 @@ jobs:
       - name: Build Application
         run: npm run build
 
-      # Deploy to Firebase Hosting
+      - name: Upload Production App Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: telepro-app-release
+          path: dist/
+          retention-days: 14
+
+      # Deploy to Firebase Hosting if credentials exist
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         if: env.FIREBASE_SERVICE_ACCOUNT != '' || env.FIREBASE_TOKEN != ''
@@ -46,11 +53,10 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_SINCERE_PLATEAU_Z5WLS }}'
           FIREBASE_TOKEN: '${{ secrets.FIREBASE_TOKEN }}'
 
-      # Fallback CLI deploy
+      # Fallback CLI deploy step if FIREBASE_TOKEN secret is provided
       - name: Deploy via Firebase CLI (Fallback)
         if: env.FIREBASE_TOKEN != '' && env.FIREBASE_SERVICE_ACCOUNT == ''
         run: |
           npx firebase-tools deploy --only hosting,firestore:rules --token "${{ secrets.FIREBASE_TOKEN }}" --project sincere-plateau-z5wls
         env:
           FIREBASE_TOKEN: '${{ secrets.FIREBASE_TOKEN }}'
-          

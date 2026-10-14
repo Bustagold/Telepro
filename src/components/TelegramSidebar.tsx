@@ -13,6 +13,7 @@ import {
   Radio,
   Briefcase
 } from 'lucide-react';
+import { PWAInstallButton } from './PWAInstallButton';
 import { Conversation, Organization, UserProfile } from '../types';
 
 interface TelegramSidebarProps {
@@ -85,6 +86,10 @@ export const TelegramSidebar: React.FC<TelegramSidebarProps> = ({
             placeholder="Search @ID, organizations..."
             className="w-full bg-[#242f3d] text-xs text-white rounded-full pl-9 pr-4 py-2 border border-transparent focus:border-[#2481cc] focus:outline-none placeholder:text-gray-400 transition"
           />
+        </div>
+
+        <div className="flex-shrink-0">
+          <PWAInstallButton variant="button" />
         </div>
       </div>
 

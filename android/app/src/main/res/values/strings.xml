@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TelePro</string>
+    <string name="title_activity_main">TelePro</string>
+    <string name="package_name">com.telepro.app</string>
+    <string name="custom_url_scheme">com.telepro.app</string>
+</resources>
