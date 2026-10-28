@@ -17,6 +17,9 @@
         "skills": { "type": "string", "maxLength": 500 },
         "experience": { "type": "string", "maxLength": 2000 },
         "education": { "type": "string", "maxLength": 1000 },
+        "onlineStatus": { "type": "string", "enum": ["online", "offline"] },
+        "lastSeen": { "type": "string", "format": "date-time" },
+        "connectionsCount": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
@@ -59,7 +62,7 @@
     },
     "OrgMember": {
       "title": "OrgMember",
-      "description": "Membership mapping between a user and an organization",
+      "description": "User membership in an organization",
       "type": "object",
       "properties": {
         "memberId": { "type": "string", "maxLength": 128 },
@@ -72,16 +75,20 @@
     },
     "Conversation": {
       "title": "Conversation",
-      "description": "Chat thread either 1-on-1 direct or group/organization channel",
+      "description": "Direct chat, group, or scalable community channel",
       "type": "object",
       "properties": {
         "conversationId": { "type": "string", "maxLength": 128 },
-        "type": { "type": "string", "enum": ["direct", "organization"] },
-        "orgId": { "type": "string", "maxLength": 128 },
+        "type": { "type": "string", "enum": ["channel", "direct", "organization"] },
         "title": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 500 },
+        "channelSlug": { "type": "string", "maxLength": 50 },
         "lastMessage": { "type": "string", "maxLength": 1000 },
         "lastMessageSenderId": { "type": "string", "maxLength": 128 },
+        "lastMessageSenderName": { "type": "string", "maxLength": 100 },
         "lastMessageTime": { "type": "string", "format": "date-time" },
+        "isPublic": { "type": "boolean" },
+        "memberCount": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
@@ -89,7 +96,7 @@
     },
     "Message": {
       "title": "Message",
-      "description": "Chat message sent in a conversation",
+      "description": "Individual real-time message within a conversation",
       "type": "object",
       "properties": {
         "messageId": { "type": "string", "maxLength": 128 },
@@ -97,29 +104,13 @@
         "senderId": { "type": "string", "maxLength": 128 },
         "senderName": { "type": "string", "maxLength": 100 },
         "senderHandle": { "type": "string", "maxLength": 32 },
+        "senderPhoto": { "type": "string", "maxLength": 500 },
         "text": { "type": "string", "maxLength": 2000 },
-        "type": { "type": "string", "enum": ["text", "meet_invite", "system"] },
-        "meetUrl": { "type": "string", "maxLength": 500 },
+        "type": { "type": "string", "enum": ["text", "image", "file", "system"] },
+        "fileUrl": { "type": "string", "maxLength": 500 },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["conversationId", "senderId", "text"]
-    },
-    "Meeting": {
-      "title": "Meeting",
-      "description": "Google Meet-style virtual room session for direct or organization calls",
-      "type": "object",
-      "properties": {
-        "meetingId": { "type": "string", "maxLength": 128 },
-        "roomCode": { "type": "string", "maxLength": 50, "pattern": "^[a-z0-9-]+$" },
-        "title": { "type": "string", "maxLength": 100 },
-        "conversationId": { "type": "string", "maxLength": 128 },
-        "hostId": { "type": "string", "maxLength": 128 },
-        "hostName": { "type": "string", "maxLength": 100 },
-        "status": { "type": "string", "enum": ["active", "ended"] },
-        "participantsCount": { "type": "number" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["roomCode", "hostId", "status"]
     }
   },
   "firestore": {
@@ -141,15 +132,11 @@
     },
     "/conversations/{conversationId}": {
       "schema": "Conversation",
-      "description": "Direct and group conversations"
+      "description": "Direct chats, community channels, and group conversations"
     },
     "/conversations/{conversationId}/messages/{messageId}": {
       "schema": "Message",
-      "description": "Messages within a conversation"
-    },
-    "/meetings/{meetingId}": {
-      "schema": "Meeting",
-      "description": "Active and scheduled Google Meet video rooms"
+      "description": "Real-time messages within a conversation"
     }
   }
 }

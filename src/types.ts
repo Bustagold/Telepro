@@ -1,6 +1,6 @@
 export interface UserProfile {
   userId: string;
-  handle: string; // telegram handle e.g. "alex_chen"
+  handle: string; // unique telegram handle e.g. "alex_chen"
   displayName: string;
   email: string;
   photoURL?: string;
@@ -8,9 +8,12 @@ export interface UserProfile {
   bio?: string;
   company?: string;
   location?: string;
-  skills?: string; // comma-separated or formatted string
-  experience?: string; // rich resume text or JSON string
+  skills?: string; // comma-separated skills
+  experience?: string; // resume timeline / experience
   education?: string;
+  onlineStatus?: 'online' | 'offline';
+  lastSeen?: string;
+  connectionsCount?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -23,7 +26,13 @@ export interface Connection {
   fromUserName?: string;
   fromUserHandle?: string;
   fromUserHeadline?: string;
+  fromUserPhoto?: string;
+  toUserName?: string;
+  toUserHandle?: string;
+  toUserHeadline?: string;
+  toUserPhoto?: string;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export type OrgCategory = 'Tech' | 'Startup' | 'AI & ML' | 'Design' | 'Finance' | 'Product' | 'General';
@@ -52,16 +61,22 @@ export interface OrgMember {
 
 export interface Conversation {
   conversationId: string;
-  type: 'direct' | 'organization';
+  type: 'channel' | 'direct' | 'organization';
   orgId?: string;
   title?: string;
+  description?: string;
+  channelSlug?: string;
   lastMessage?: string;
   lastMessageSenderId?: string;
+  lastMessageSenderName?: string;
   lastMessageTime?: string;
   participants?: string[];
   participantHandles?: { [userId: string]: string };
   participantNames?: { [userId: string]: string };
   participantPhotos?: { [userId: string]: string };
+  memberCount?: number;
+  unreadCount?: number;
+  isPublic?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -74,20 +89,10 @@ export interface Message {
   senderHandle: string;
   senderPhoto?: string;
   text: string;
-  type: 'text' | 'meet_invite' | 'system' | 'connect_card';
-  meetUrl?: string;
-  meetRoomCode?: string;
+  type: 'text' | 'image' | 'file' | 'system';
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: string;
+  readBy?: string[];
   createdAt: string;
-}
-
-export interface Meeting {
-  meetingId: string;
-  roomCode: string; // e.g. "tele-meet-842"
-  title: string;
-  conversationId: string;
-  hostId: string;
-  hostName: string;
-  status: 'active' | 'ended';
-  participantsCount?: number;
-  createdAt?: string;
 }

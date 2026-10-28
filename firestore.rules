@@ -62,7 +62,7 @@ service cloud.firestore {
 
     function isValidConversation(data) {
       return data.keys().hasAll(['type'])
-        && (data.type == 'direct' || data.type == 'organization')
+        && (data.type == 'direct' || data.type == 'channel' || data.type == 'organization')
         && (!('title' in data) || (data.title is string && data.title.size() <= 100))
         && (!('lastMessage' in data) || (data.lastMessage is string && data.lastMessage.size() <= 1000));
     }
@@ -72,13 +72,6 @@ service cloud.firestore {
         && data.conversationId is string && data.conversationId.size() <= 128
         && data.senderId is string && data.senderId.size() <= 128
         && data.text is string && data.text.size() <= 2000;
-    }
-
-    function isValidMeeting(data) {
-      return data.keys().hasAll(['roomCode', 'hostId', 'status'])
-        && data.roomCode is string && data.roomCode.size() <= 50
-        && data.hostId is string && data.hostId.size() <= 128
-        && (data.status == 'active' || data.status == 'ended');
     }
 
     // 1. Users collection: Professional profiles and resumes
@@ -144,7 +137,7 @@ service cloud.firestore {
         && (existing().userId == request.auth.uid || get(/databases/$(database)/documents/organizations/$(existing().orgId)).data.ownerId == request.auth.uid);
     }
 
-    // 5. Conversations
+    // 5. Conversations (Channels, Direct chats, Organization hubs)
     match /conversations/{conversationId} {
       allow read: if isSignedIn() && isValidId(conversationId);
       allow create: if isSignedIn()
@@ -154,7 +147,7 @@ service cloud.firestore {
         && isValidId(conversationId)
         && isValidConversation(incoming());
 
-      // 6. Subcollection: Messages
+      // 6. Subcollection: Real-Time Messages
       match /messages/{messageId} {
         allow read: if isSignedIn() && isValidId(messageId);
         allow create: if isSignedIn()
@@ -164,18 +157,6 @@ service cloud.firestore {
         allow delete: if isSignedIn()
           && resource.data.senderId == request.auth.uid;
       }
-    }
-
-    // 7. Meetings
-    match /meetings/{meetingId} {
-      allow read: if isSignedIn() && isValidId(meetingId);
-      allow create: if isSignedIn()
-        && isValidId(meetingId)
-        && incoming().hostId == request.auth.uid
-        && isValidMeeting(incoming());
-      allow update: if isSignedIn()
-        && isValidId(meetingId)
-        && isValidMeeting(incoming());
     }
   }
 }

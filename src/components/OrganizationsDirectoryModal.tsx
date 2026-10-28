@@ -7,7 +7,6 @@ import {
   Plus,
   ExternalLink,
   MessageCircle,
-  Video,
   CheckCircle2,
   Sparkles,
   Layers,
@@ -22,7 +21,6 @@ interface OrganizationsDirectoryModalProps {
   onClose: () => void;
   onJoinOrg: (org: Organization) => void;
   onOpenOrgChat: (org: Organization) => void;
-  onStartOrgMeet: (org: Organization) => void;
   onCreateOrg: (newOrg: { name: string; category: OrgCategory; description: string; website: string }) => void;
 }
 
@@ -35,7 +33,6 @@ export const OrganizationsDirectoryModal: React.FC<OrganizationsDirectoryModalPr
   onClose,
   onJoinOrg,
   onOpenOrgChat,
-  onStartOrgMeet,
   onCreateOrg
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -230,20 +227,10 @@ export const OrganizationsDirectoryModal: React.FC<OrganizationsDirectoryModalPr
                                 onOpenOrgChat(org);
                                 onClose();
                               }}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#2481cc] hover:bg-[#1f70b3] text-white rounded-lg text-xs font-semibold transition"
+                              className="flex items-center gap-1.5 px-4 py-1.5 bg-[#2481cc] hover:bg-[#1f70b3] text-white rounded-lg text-xs font-semibold transition cursor-pointer"
                             >
                               <MessageCircle className="w-3.5 h-3.5" />
                               <span>Open Chat</span>
-                            </button>
-                            <button
-                              onClick={() => {
-                                onStartOrgMeet(org);
-                                onClose();
-                              }}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-lg text-xs font-semibold transition"
-                            >
-                              <Video className="w-3.5 h-3.5" />
-                              <span>Meet</span>
                             </button>
                           </div>
                         </>

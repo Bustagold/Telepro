@@ -8,7 +8,6 @@ import {
   UserPlus,
   Check,
   MessageCircle,
-  Video,
   Copy,
   Edit3,
   ThumbsUp,
@@ -26,7 +25,6 @@ interface UserProfileModalProps {
   onSendConnect?: (targetUserId: string) => void;
   onAcceptConnect?: (targetUserId: string) => void;
   onStartChat?: (profile: UserProfile) => void;
-  onStartMeet?: (profile: UserProfile) => void;
   onSaveProfile?: (updatedData: Partial<UserProfile>) => void;
 }
 
@@ -38,7 +36,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   onSendConnect,
   onAcceptConnect,
   onStartChat,
-  onStartMeet,
   onSaveProfile
 }) => {
   const isOwnProfile = profile.userId === currentUser.userId;
@@ -180,19 +177,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     >
                       <MessageCircle className="w-4 h-4 text-[#2481cc]" />
                       <span>Message</span>
-                    </button>
-                  )}
-
-                  {onStartMeet && (
-                    <button
-                      onClick={() => {
-                        onStartMeet(profile);
-                        onClose();
-                      }}
-                      className="flex items-center gap-1.5 px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-full text-xs font-semibold shadow transition"
-                    >
-                      <Video className="w-4 h-4" />
-                      <span>Start Meet</span>
                     </button>
                   )}
                 </>

@@ -5,7 +5,6 @@ import {
   Check,
   UserX,
   MessageCircle,
-  Video,
   Briefcase,
   ExternalLink,
   Users

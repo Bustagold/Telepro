@@ -4,14 +4,12 @@ import {
   Search,
   Users,
   Building,
-  Video,
   Plus,
-  Check,
   CheckCheck,
-  Pin,
+  Hash,
   AtSign,
-  Radio,
-  Briefcase
+  Globe,
+  Sparkles
 } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 import { Conversation, Organization, UserProfile } from '../types';
@@ -25,21 +23,18 @@ interface TelegramSidebarProps {
   onOpenDrawer: () => void;
   onOpenOrgDirectory: () => void;
   onOpenNewDirectChat: () => void;
-  onStartInstantMeet: () => void;
 }
 
-type TabType = 'all' | 'direct' | 'orgs' | 'meets';
+type TabType = 'all' | 'direct' | 'channels' | 'orgs';
 
 export const TelegramSidebar: React.FC<TelegramSidebarProps> = ({
   conversations,
   activeConversationId,
   currentUser,
-  organizations,
   onSelectConversation,
   onOpenDrawer,
   onOpenOrgDirectory,
-  onOpenNewDirectChat,
-  onStartInstantMeet
+  onOpenNewDirectChat
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -49,8 +44,8 @@ export const TelegramSidebar: React.FC<TelegramSidebarProps> = ({
   const filteredConversations = conversations.filter(conv => {
     // Tab filter
     if (activeTab === 'direct' && conv.type !== 'direct') return false;
+    if (activeTab === 'channels' && conv.type !== 'channel') return false;
     if (activeTab === 'orgs' && conv.type !== 'organization') return false;
-    if (activeTab === 'meets' && !conv.lastMessage?.toLowerCase().includes('meet')) return false;
 
     // Search query
     if (!searchQuery.trim()) return true;
@@ -70,20 +65,20 @@ export const TelegramSidebar: React.FC<TelegramSidebarProps> = ({
         {/* Hamburger Menu Icon */}
         <button
           onClick={onOpenDrawer}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#202b36] transition"
-          title="Menu"
+          className="p-2 rounded-full text-gray-400 hover:text-white hover:bg-[#202b36] transition flex-shrink-0 cursor-pointer"
+          title="Open Menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Telegram Search Field */}
+        {/* Search Bar */}
         <div className="flex-1 relative">
           <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search @ID, organizations..."
+            placeholder="Search @handle, channels..."
             className="w-full bg-[#242f3d] text-xs text-white rounded-full pl-9 pr-4 py-2 border border-transparent focus:border-[#2481cc] focus:outline-none placeholder:text-gray-400 transition"
           />
         </div>
@@ -94,164 +89,158 @@ export const TelegramSidebar: React.FC<TelegramSidebarProps> = ({
       </div>
 
       {/* Telegram Folder / Tabs Bar */}
-      <div className="flex items-center px-2 border-b border-[#0e1621] bg-[#17212b] overflow-x-auto scrollbar-none">
+      <div className="flex items-center px-2 py-1.5 bg-[#17212b] border-b border-[#0e1621] text-xs font-medium text-gray-400 overflow-x-auto custom-scrollbar">
         <button
           onClick={() => setActiveTab('all')}
-          className={`px-3.5 py-2.5 text-xs font-semibold whitespace-nowrap transition border-b-2 flex items-center gap-1.5 ${
+          className={`px-3 py-1.5 rounded-full transition whitespace-nowrap cursor-pointer ${
             activeTab === 'all'
-              ? 'text-[#2481cc] border-[#2481cc]'
-              : 'text-gray-400 border-transparent hover:text-gray-200'
+              ? 'text-white bg-[#242f3d] font-bold shadow-sm'
+              : 'hover:text-gray-200'
           }`}
         >
-          <span>All</span>
-          <span className="text-[10px] bg-[#242f3d] px-1.5 py-0.2 rounded-full text-gray-300">
-            {conversations.length}
-          </span>
+          All
+        </button>
+
+        <button
+          onClick={() => setActiveTab('channels')}
+          className={`px-3 py-1.5 rounded-full transition whitespace-nowrap flex items-center gap-1 cursor-pointer ${
+            activeTab === 'channels'
+              ? 'text-white bg-[#242f3d] font-bold shadow-sm'
+              : 'hover:text-gray-200'
+          }`}
+        >
+          <Hash className="w-3 h-3 text-[#2481cc]" />
+          <span>Channels</span>
         </button>
 
         <button
           onClick={() => setActiveTab('direct')}
-          className={`px-3.5 py-2.5 text-xs font-semibold whitespace-nowrap transition border-b-2 flex items-center gap-1.5 ${
+          className={`px-3 py-1.5 rounded-full transition whitespace-nowrap flex items-center gap-1 cursor-pointer ${
             activeTab === 'direct'
-              ? 'text-[#2481cc] border-[#2481cc]'
-              : 'text-gray-400 border-transparent hover:text-gray-200'
+              ? 'text-white bg-[#242f3d] font-bold shadow-sm'
+              : 'hover:text-gray-200'
           }`}
         >
-          <AtSign className="w-3.5 h-3.5" />
-          <span>Direct @IDs</span>
+          <AtSign className="w-3 h-3 text-emerald-400" />
+          <span>Direct</span>
         </button>
 
         <button
           onClick={() => setActiveTab('orgs')}
-          className={`px-3.5 py-2.5 text-xs font-semibold whitespace-nowrap transition border-b-2 flex items-center gap-1.5 ${
+          className={`px-3 py-1.5 rounded-full transition whitespace-nowrap flex items-center gap-1 cursor-pointer ${
             activeTab === 'orgs'
-              ? 'text-[#2481cc] border-[#2481cc]'
-              : 'text-gray-400 border-transparent hover:text-gray-200'
+              ? 'text-white bg-[#242f3d] font-bold shadow-sm'
+              : 'hover:text-gray-200'
           }`}
         >
-          <Building className="w-3.5 h-3.5" />
+          <Building className="w-3 h-3 text-purple-400" />
           <span>Organizations</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('meets')}
-          className={`px-3.5 py-2.5 text-xs font-semibold whitespace-nowrap transition border-b-2 flex items-center gap-1.5 ${
-            activeTab === 'meets'
-              ? 'text-[#2481cc] border-[#2481cc]'
-              : 'text-gray-400 border-transparent hover:text-gray-200'
-          }`}
-        >
-          <Video className="w-3.5 h-3.5" />
-          <span>Meet Rooms</span>
         </button>
       </div>
 
-      {/* Chat List */}
-      <div className="flex-1 overflow-y-auto divide-y divide-[#0e1621]/40">
-        {filteredConversations.length > 0 ? (
-          filteredConversations.map(conv => {
-            const isActive = activeConversationId === conv.conversationId;
-            const isOrg = conv.type === 'organization';
+      {/* Conversations List */}
+      <div className="flex-1 overflow-y-auto divide-y divide-[#0e1621] custom-scrollbar">
+        {filteredConversations.map(conv => {
+          const isActive = conv.conversationId === activeConversationId;
+          const isChannel = conv.type === 'channel';
+          const isOrg = conv.type === 'organization';
 
-            // Find other participant for direct chat
-            let otherName = conv.title || 'Chat';
-            let otherHandle = '';
-            let otherPhoto = '';
+          // For direct chats, find peer's data
+          let displayName = conv.title || 'Chat';
+          let displayHandle = '';
+          let photoURL = '';
 
-            if (!isOrg && conv.participants) {
-              const otherId = conv.participants.find(p => p !== currentUser.userId);
-              if (otherId) {
-                otherName = conv.participantNames?.[otherId] || conv.title || 'Professional';
-                otherHandle = conv.participantHandles?.[otherId] || '';
-                otherPhoto = conv.participantPhotos?.[otherId] || '';
-              }
+          if (!isChannel && !isOrg && conv.participants) {
+            const peerId = conv.participants.find(p => p !== currentUser.userId);
+            if (peerId) {
+              displayName = conv.participantNames?.[peerId] || conv.title || 'Professional';
+              displayHandle = conv.participantHandles?.[peerId] || '';
+              photoURL = conv.participantPhotos?.[peerId] || '';
             }
+          }
 
-            const isMeetActive = conv.lastMessage?.toLowerCase().includes('meet');
+          const timeFormatted = conv.lastMessageTime
+            ? new Date(conv.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : '';
 
-            return (
-              <div
-                key={conv.conversationId}
-                onClick={() => onSelectConversation(conv.conversationId)}
-                className={`flex items-center gap-3 px-3.5 py-3 cursor-pointer transition select-none ${
-                  isActive ? 'bg-[#2b5278]' : 'hover:bg-[#202b36]'
-                }`}
-              >
-                {/* Avatar */}
-                <div className="relative flex-shrink-0">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center font-bold text-white shadow">
-                    {isOrg ? (
-                      <div className="w-full h-full bg-gradient-to-tr from-blue-700 to-indigo-800 flex items-center justify-center text-lg">
-                        <Building className="w-5 h-5 text-white" />
-                      </div>
-                    ) : otherPhoto ? (
-                      <img src={otherPhoto} alt={otherName} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-base">{otherName.charAt(0)}</span>
-                    )}
-                  </div>
-                  {/* Status dot */}
-                  {isOrg ? (
-                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-blue-500 border-2 border-[#17212b] flex items-center justify-center text-[8px]">
-                      👥
-                    </span>
+          return (
+            <div
+              key={conv.conversationId}
+              onClick={() => onSelectConversation(conv.conversationId)}
+              className={`flex items-center gap-3 px-3.5 py-3 cursor-pointer transition select-none ${
+                isActive ? 'bg-[#2b5278] text-white' : 'hover:bg-[#202b36] text-gray-200'
+              }`}
+            >
+              {/* Avatar Icon */}
+              <div className="relative flex-shrink-0">
+                <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center font-bold text-white shadow-sm">
+                  {isChannel ? (
+                    <div className="w-full h-full bg-gradient-to-tr from-[#2481cc] to-[#1a73e8] flex items-center justify-center">
+                      <Hash className="w-6 h-6 text-white" />
+                    </div>
+                  ) : isOrg ? (
+                    <div className="w-full h-full bg-gradient-to-tr from-purple-700 to-indigo-800 flex items-center justify-center">
+                      <Building className="w-6 h-6 text-white" />
+                    </div>
+                  ) : photoURL ? (
+                    <img src={photoURL} alt={displayName} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#17212b]"></span>
+                    <span className="text-base font-bold">{displayName.charAt(0).toUpperCase()}</span>
                   )}
                 </div>
 
-                {/* Conversation Meta */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="font-semibold text-xs sm:text-sm text-white truncate">{otherName}</span>
-                      {otherHandle && (
-                        <span className="text-[11px] font-mono text-blue-300/80 truncate">@{otherHandle}</span>
-                      )}
-                    </div>
-                    <span className="text-[10px] text-gray-400 font-mono whitespace-nowrap ml-2">
-                      {conv.lastMessageTime ? new Date(conv.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                    </span>
-                  </div>
+                {!isChannel && !isOrg && (
+                  <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-[#17212b]"></span>
+                )}
+              </div>
 
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-gray-300 truncate leading-relaxed">
-                      {isMeetActive ? (
-                        <span className="text-emerald-400 font-medium flex items-center gap-1">
-                          <Radio className="w-3 h-3 animate-pulse text-emerald-400" />
-                          <span>Google Meet Active</span>
-                        </span>
-                      ) : (
-                        conv.lastMessage || 'No messages yet'
-                      )}
-                    </p>
-
-                    {conv.lastMessageSenderId === currentUser.userId && (
-                      <CheckCheck className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 ml-1" />
+              {/* Chat Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <h3 className="text-sm font-semibold text-white truncate">
+                      {displayName}
+                    </h3>
+                    {displayHandle && (
+                      <span className="text-[10px] font-mono text-blue-300 truncate">
+                        @{displayHandle}
+                      </span>
                     )}
                   </div>
+                  <span className="text-[11px] text-gray-400 flex-shrink-0 ml-2">
+                    {timeFormatted}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-400 truncate pr-2">
+                    {conv.lastMessage || (isChannel ? 'Join channel conversation' : 'Send a direct message')}
+                  </p>
+
+                  {conv.unreadCount && conv.unreadCount > 0 ? (
+                    <span className="bg-[#2481cc] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0">
+                      {conv.unreadCount}
+                    </span>
+                  ) : null}
                 </div>
               </div>
-            );
-          })
-        ) : (
-          <div className="p-8 text-center text-gray-400">
-            <p className="text-sm font-medium text-gray-300">No chats in this folder</p>
-            <p className="text-xs text-gray-500 mt-1">Start a direct chat with an @ID or browse organizations.</p>
-            <div className="mt-4 flex flex-col gap-2">
-              <button
-                onClick={onOpenOrgDirectory}
-                className="px-3 py-1.5 bg-[#2481cc] hover:bg-[#1f70b3] text-white rounded-lg text-xs font-semibold transition"
-              >
-                Browse Organizations Directory
-              </button>
-              <button
-                onClick={onOpenNewDirectChat}
-                className="px-3 py-1.5 bg-[#242f3d] hover:bg-[#202b36] text-gray-200 rounded-lg text-xs font-medium transition"
-              >
-                Find Professional by @ID
-              </button>
             </div>
+          );
+        })}
+
+        {filteredConversations.length === 0 && (
+          <div className="p-8 text-center text-gray-400">
+            <Sparkles className="w-8 h-8 text-blue-400 mx-auto mb-2 opacity-60" />
+            <p className="text-xs font-semibold text-white">No chats found</p>
+            <p className="text-[11px] text-gray-400 mt-1 mb-4">
+              Search by @handle to start messaging other registered members.
+            </p>
+            <button
+              onClick={onOpenNewDirectChat}
+              className="px-3.5 py-1.5 bg-[#242f3d] hover:bg-[#202b36] text-blue-400 rounded-full text-xs font-medium transition border border-blue-500/30 cursor-pointer"
+            >
+              Start Chat by @Handle
+            </button>
           </div>
         )}
       </div>
@@ -259,16 +248,19 @@ export const TelegramSidebar: React.FC<TelegramSidebarProps> = ({
       {/* Floating Action Button (Telegram Pencil/Plus) */}
       <div className="absolute bottom-5 right-5 z-20">
         {showFabMenu && (
-          <div className="absolute bottom-14 right-0 bg-[#242f3d] border border-gray-700 rounded-xl shadow-2xl p-2 w-56 flex flex-col gap-1 text-xs animate-in slide-in-from-bottom duration-150">
+          <div className="absolute bottom-14 right-0 bg-[#242f3d] border border-gray-700 rounded-2xl shadow-2xl p-2 w-60 flex flex-col gap-1 text-xs animate-in slide-in-from-bottom duration-150">
             <button
               onClick={() => {
                 setShowFabMenu(false);
                 onOpenNewDirectChat();
               }}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-gray-200 hover:bg-[#2b5278] hover:text-white transition text-left"
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-gray-200 hover:bg-[#2b5278] hover:text-white transition text-left cursor-pointer"
             >
               <AtSign className="w-4 h-4 text-blue-400" />
-              <span>New Message by @ID</span>
+              <div>
+                <span className="font-semibold block">New Direct Chat</span>
+                <span className="text-[10px] text-gray-400">Search member by @handle</span>
+              </div>
             </button>
 
             <button
@@ -276,28 +268,20 @@ export const TelegramSidebar: React.FC<TelegramSidebarProps> = ({
                 setShowFabMenu(false);
                 onOpenOrgDirectory();
               }}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-gray-200 hover:bg-[#2b5278] hover:text-white transition text-left"
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-gray-200 hover:bg-[#2b5278] hover:text-white transition text-left cursor-pointer"
             >
-              <Building className="w-4 h-4 text-emerald-400" />
-              <span>Browse Organizations</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setShowFabMenu(false);
-                onStartInstantMeet();
-              }}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-gray-200 hover:bg-[#2b5278] hover:text-white transition text-left"
-            >
-              <Video className="w-4 h-4 text-rose-400" />
-              <span>Instant Google Meet</span>
+              <Building className="w-4 h-4 text-purple-400" />
+              <div>
+                <span className="font-semibold block">Organizations Directory</span>
+                <span className="text-[10px] text-gray-400">Join industry communities</span>
+              </div>
             </button>
           </div>
         )}
 
         <button
           onClick={() => setShowFabMenu(!showFabMenu)}
-          className="w-13 h-13 rounded-full bg-[#2481cc] hover:bg-[#1f70b3] text-white flex items-center justify-center shadow-2xl transition transform hover:scale-105 active:scale-95"
+          className="w-13 h-13 rounded-full bg-[#2481cc] hover:bg-[#1f70b3] text-white flex items-center justify-center shadow-2xl transition transform hover:scale-105 active:scale-95 cursor-pointer"
           title="New Action"
         >
           <Plus className="w-6 h-6" />
